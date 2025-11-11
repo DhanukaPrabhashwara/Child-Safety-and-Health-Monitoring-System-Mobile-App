@@ -3,3 +3,4 @@
 - Added alert triggers for low hydration
 - Added health guidelines text
 - Final styling adjustments for readability
+- Refactored hydration calculation helper function
