@@ -8,4 +8,3 @@
 - Adjusted alert thresholds based on testing
 - Fixed typo in alert message string
 - Added icons to alert modal
-- Minor text updates to guidance section
