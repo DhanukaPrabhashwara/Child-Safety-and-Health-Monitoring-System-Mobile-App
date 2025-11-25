@@ -5,3 +5,4 @@
 - Final styling adjustments for readability
 - Refactored hydration calculation helper function
 - Updated unit tests for risk calculation
+- Adjusted alert thresholds based on testing
