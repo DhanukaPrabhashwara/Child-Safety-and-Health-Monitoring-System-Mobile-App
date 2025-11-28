@@ -7,4 +7,3 @@
 - Updated unit tests for risk calculation
 - Adjusted alert thresholds based on testing
 - Fixed typo in alert message string
-- Added icons to alert modal
