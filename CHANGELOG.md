@@ -1,0 +1,1 @@
+- Added 'Save Location' modal with coordinate selection
