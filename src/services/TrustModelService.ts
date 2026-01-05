@@ -240,8 +240,9 @@ class TrustModelService {
         
         console.log(`Max Similarity Score: ${maxScore} (Matched: ${identifiedPerson})`);
         
-        // Threshold check (0.75 is a common starting point for Cosine Sim)
-        if (maxScore > 0.75 && identifiedPerson) {
+        // Threshold check (0.85 as requested for high security)
+        const TRUST_THRESHOLD = 0.85;
+        if (maxScore > TRUST_THRESHOLD && identifiedPerson) {
             return { status: 'SAFE', score: maxScore, person: identifiedPerson };
         }
         
