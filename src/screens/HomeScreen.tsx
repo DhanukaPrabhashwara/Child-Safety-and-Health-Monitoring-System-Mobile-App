@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, SafeAreaView, StatusBar, ImageBackground, Alert } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, SafeAreaView, StatusBar, ImageBackground } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,12 +8,29 @@ import { useChildContext } from '../context/ChildContext';
 import ChildCard from '../components/ChildCard';
 import { COLORS, SPACING, SIZES } from '../constants/theme';
 import { RootStackParamList } from '../navigation/types';
+import CustomAlert, { AlertType, AlertButton } from '../components/CustomAlert';
 
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
 
 const HomeScreen = () => {
     const navigation = useNavigation<HomeScreenNavigationProp>();
     const { children } = useChildContext();
+
+    const [alertConfig, setAlertConfig] = useState({
+        visible: false,
+        title: '',
+        message: '',
+        type: 'info' as AlertType,
+        buttons: [{ text: 'OK' }] as AlertButton[]
+    });
+
+    const showAlert = (title: string, message: string, type: AlertType = 'info', buttons: AlertButton[] = [{ text: 'OK' }]) => {
+        setAlertConfig({ visible: true, title, message, type, buttons });
+    };
+
+    const hideAlert = () => {
+        setAlertConfig(prev => ({ ...prev, visible: false }));
+    };
 
     const handleAddChild = () => {
         navigation.navigate('AddChild');
@@ -24,9 +41,10 @@ const HomeScreen = () => {
     };
 
     const handleLogout = () => {
-        Alert.alert(
+        showAlert(
             "Logout",
             "Are you sure you want to logout?",
+            'warning',
             [
                 { text: "Cancel", style: "cancel" },
                 { text: "Logout", onPress: () => navigation.replace('Login') }
@@ -48,6 +66,14 @@ const HomeScreen = () => {
         // Removed opacity/tint hack as the image itself is dark
         >
             <SafeAreaView style={styles.safeArea}>
+                <CustomAlert 
+                    visible={alertConfig.visible}
+                    title={alertConfig.title}
+                    message={alertConfig.message}
+                    type={alertConfig.type}
+                    onClose={hideAlert}
+                    buttons={alertConfig.buttons}
+                />
                 <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
                 <View style={styles.header}>
                     <View>

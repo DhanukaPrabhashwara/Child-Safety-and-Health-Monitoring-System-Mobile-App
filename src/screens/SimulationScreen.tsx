@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SIZES, SPACING } from '../constants/theme';
 import VoiceRecorderService from '../services/VoiceRecorderService';
 import TrustModelService from '../services/TrustModelService';
+import CustomAlert, { AlertType } from '../components/CustomAlert';
 
 const SimulationScreen = () => {
     const navigation = useNavigation();
@@ -13,13 +14,30 @@ const SimulationScreen = () => {
     const [testStatus, setTestStatus] = useState<'idle' | 'processing' | 'safe' | 'danger'>('idle');
     const [lastScore, setLastScore] = useState<number | null>(null);
     const [debugInfo, setDebugInfo] = useState<string>('Ready to test...');
+    
+    const [alertConfig, setAlertConfig] = useState({
+        visible: false,
+        title: '',
+        message: '',
+        type: 'info' as AlertType,
+        buttons: [{ text: 'OK' }] as any[]
+    });
+
+    const showAlert = (title: string, message: string, type: AlertType = 'info', buttons = [{ text: 'OK' }]) => {
+        setAlertConfig({ visible: true, title, message, type, buttons });
+    };
+
+    const hideAlert = () => {
+        setAlertConfig(prev => ({ ...prev, visible: false }));
+    };
 
     const handleStrangerTest = async () => {
         // Since we don't have a physical stranger file to load, we will guide the user
         // to use the Live Test functionality with a stranger's voice.
-        Alert.alert(
+        showAlert(
             "Test Stranger Voice",
             "To test a stranger's voice, please use the 'Live Voice Test' below and have someone else speak, or play a recording of a stranger.",
+            'info',
             [{ text: "OK" }]
         );
     };
@@ -59,7 +77,7 @@ const SimulationScreen = () => {
                 setTestStatus('idle');
             } catch (err: any) {
                 console.error("Simulation recording error:", err);
-                Alert.alert("Error", `Could not start recording: ${err.message || err}`);
+                showAlert("Error", `Could not start recording: ${err.message || err}`, 'error');
             }
         }
     };
@@ -71,6 +89,14 @@ const SimulationScreen = () => {
 
     return (
         <SafeAreaView style={styles.container}>
+            <CustomAlert 
+                visible={alertConfig.visible}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                type={alertConfig.type}
+                onClose={hideAlert}
+                buttons={alertConfig.buttons}
+            />
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color={COLORS.text} />

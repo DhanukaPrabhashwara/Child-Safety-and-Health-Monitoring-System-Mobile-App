@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, ScrollView, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,6 +8,7 @@ import { RootStackParamList } from '../navigation/types';
 import VoiceRecorderService from '../services/VoiceRecorderService';
 import TrustModelService from '../services/TrustModelService';
 import { Audio } from 'expo-av';
+import CustomAlert, { AlertType, AlertButton } from '../components/CustomAlert';
 
 type EnrollVoiceRouteProp = RouteProp<RootStackParamList, 'EnrollVoice'>;
 
@@ -30,12 +31,28 @@ const EnrollVoiceScreen = () => {
     const [completedSteps, setCompletedSteps] = useState<number[]>([]);
     const [permissionResponse, requestPermission] = Audio.usePermissions();
     
+    const [alertConfig, setAlertConfig] = useState({
+        visible: false,
+        title: '',
+        message: '',
+        type: 'info' as AlertType,
+        buttons: [{ text: 'OK' }] as AlertButton[]
+    });
+
+    const showAlert = (title: string, message: string, type: AlertType = 'info', buttons: AlertButton[] = [{ text: 'OK' }]) => {
+        setAlertConfig({ visible: true, title, message, type, buttons });
+    };
+
+    const hideAlert = () => {
+        setAlertConfig(prev => ({ ...prev, visible: false }));
+    };
+
     const startRecording = async (stepId: number) => {
         try {
             if (permissionResponse?.status !== 'granted') {
                 const result = await requestPermission();
                 if (!result.granted) {
-                    Alert.alert('Permission Required', 'Microphone access is needed to enroll voice.');
+                    showAlert('Permission Required', 'Microphone access is needed to enroll voice.', 'warning');
                     return;
                 }
             }
@@ -50,7 +67,7 @@ const EnrollVoiceScreen = () => {
             setActiveStep(stepId);
         } catch (err: any) {
             console.error('Failed to start recording', err);
-            Alert.alert('Error', `Could not start microphone: ${err.message || err}`);
+            showAlert('Error', `Could not start microphone: ${err.message || err}`, 'error');
         }
     };
 
@@ -59,7 +76,7 @@ const EnrollVoiceScreen = () => {
         
         // Validate name if no child provided or enforce name even with child
         if (!customName.trim()) {
-            Alert.alert('Name Required', 'Please enter a name for this voice profile before recording.');
+            showAlert('Name Required', 'Please enter a name for this voice profile before recording.', 'warning');
             return;
         }
 
@@ -75,11 +92,11 @@ const EnrollVoiceScreen = () => {
                 await TrustModelService.enrollVoiceSample(enrolledName, uri);
                 
                 setCompletedSteps(prev => [...prev, stepId]);
-                Alert.alert('✅ Saved', `Voice sample recorded successfully.`);
+                showAlert('Saved', `Voice sample recorded successfully.`, 'success');
             }
         } catch (error: any) {
             console.error(error);
-            Alert.alert('Error', `Failed to process voice sample: ${error?.message || error}`);
+            showAlert('Error', `Failed to process voice sample: ${error?.message || error}`, 'error');
         } finally {
             setProcessingStepId(null);
         }
@@ -87,16 +104,24 @@ const EnrollVoiceScreen = () => {
 
     const handleFinish = async () => {
         if (completedSteps.length < STEPS.length) {
-            Alert.alert('Incomplete', 'Please complete all voice samples first.');
+            showAlert('Incomplete', 'Please complete all voice samples first.', 'warning');
             return;
         }
-        Alert.alert('Success', 'Voice enrollment complete! The AI now recognizes you.', [
+        showAlert('Success', 'Voice enrollment complete! The AI now recognizes you.', 'success', [
             { text: 'OK', onPress: () => navigation.goBack() }
         ]);
     };
 
     return (
         <SafeAreaView style={styles.container}>
+            <CustomAlert 
+                visible={alertConfig.visible}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                type={alertConfig.type}
+                onClose={hideAlert}
+                buttons={alertConfig.buttons}
+            />
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color={COLORS.text} />

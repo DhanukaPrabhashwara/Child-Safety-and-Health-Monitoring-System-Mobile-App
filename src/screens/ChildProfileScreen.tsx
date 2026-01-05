@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Linking, Platform, SafeAreaView, Dimensions, Alert } from 'react-native';
+import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Linking, Platform, SafeAreaView, Dimensions } from 'react-native';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { Ionicons, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -7,6 +7,7 @@ import { Ionicons, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-ic
 import { ChildTabParamList } from '../navigation/types';
 import { COLORS, SPACING, SIZES } from '../constants/theme';
 import { Child } from '../data/mockData';
+import CustomAlert, { AlertType } from '../components/CustomAlert';
 
 type ChildProfileScreenRouteProp = RouteProp<ChildTabParamList, 'Dashboard'>;
 type ChildProfileScreenNavigationProp = BottomTabNavigationProp<ChildTabParamList, 'Dashboard'>;
@@ -19,6 +20,22 @@ const ChildProfileScreen = () => {
     const { child } = route.params;
 
     const [fabExpanded, setFabExpanded] = useState(false);
+
+    const [alertConfig, setAlertConfig] = useState({
+        visible: false,
+        title: '',
+        message: '',
+        type: 'info' as AlertType,
+        buttons: [{ text: 'OK' }] as any[]
+    });
+
+    const showAlert = (title: string, message: string, type: AlertType = 'info', buttons = [{ text: 'OK' }]) => {
+        setAlertConfig({ visible: true, title, message, type, buttons });
+    };
+
+    const hideAlert = () => {
+        setAlertConfig(prev => ({ ...prev, visible: false }));
+    };
 
     const isDistress = child.audioStatus === 'distress';
     const isUnknown = child.audioStatus === 'unknown';
@@ -45,6 +62,14 @@ const ChildProfileScreen = () => {
 
     return (
         <SafeAreaView style={styles.container}>
+            <CustomAlert 
+                visible={alertConfig.visible}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                type={alertConfig.type}
+                onClose={hideAlert}
+                buttons={alertConfig.buttons}
+            />
             <ScrollView bounces={false} contentContainerStyle={styles.scrollContent}>
                 
                 {/* Header: Name, Avatar, Call Button */}
@@ -161,13 +186,13 @@ const ChildProfileScreen = () => {
                             <Ionicons name="mic" size={20} color={COLORS.white} />
                         </View>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.fabActionItem} onPress={() => Alert.alert('Add Zone', 'Map feature coming soon.')}>
+                    <TouchableOpacity style={styles.fabActionItem} onPress={() => showAlert('Add Zone', 'Map feature coming soon.', 'info')}>
                         <Text style={styles.fabActionText}>Add Safe Zone</Text>
                         <View style={styles.fabActionBtn}>
                             <Ionicons name="map" size={20} color={COLORS.white} />
                         </View>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.fabActionItem} onPress={() => Alert.alert('Log Health', 'Manual entry form.')}>
+                    <TouchableOpacity style={styles.fabActionItem} onPress={() => showAlert('Log Health', 'Manual entry form.', 'info')}>
                         <Text style={styles.fabActionText}>Log Health Data</Text>
                         <View style={styles.fabActionBtn}>
                             <Ionicons name="heart" size={20} color={COLORS.white} />

@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { Audio } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SIZES, SPACING } from '../constants/theme';
 import TrustModelService from '../services/TrustModelService';
+import CustomAlert, { AlertType, AlertButton } from '../components/CustomAlert';
 
 interface EnrolledVoice {
     name: string;
@@ -20,6 +21,22 @@ const ManageTrustedVoicesScreen = () => {
     const [playingPath, setPlayingPath] = useState<string | null>(null);
     const [sound, setSound] = useState<Audio.Sound | null>(null);
 
+    const [alertConfig, setAlertConfig] = useState({
+        visible: false,
+        title: '',
+        message: '',
+        type: 'info' as AlertType,
+        buttons: [{ text: 'OK' }] as AlertButton[]
+    });
+
+    const showAlert = (title: string, message: string, type: AlertType = 'info', buttons: AlertButton[] = [{ text: 'OK' }]) => {
+        setAlertConfig({ visible: true, title, message, type, buttons });
+    };
+
+    const hideAlert = () => {
+        setAlertConfig(prev => ({ ...prev, visible: false }));
+    };
+
     const loadVoices = async () => {
         setLoading(true);
         try {
@@ -27,7 +44,7 @@ const ManageTrustedVoicesScreen = () => {
             setVoices(list);
         } catch (error) {
             console.error(error);
-            Alert.alert('Error', 'Failed to load voices');
+            showAlert('Error', 'Failed to load voices', 'error');
         } finally {
             setLoading(false);
         }
@@ -44,7 +61,7 @@ const ManageTrustedVoicesScreen = () => {
 
     const showDebugInfo = async () => {
         const info = await TrustModelService.getDebugInfo();
-        Alert.alert("Model Debug Info", info);
+        showAlert("Model Debug Info", info, 'info');
     };
 
     const playAudio = async (path: string) => {
@@ -71,14 +88,15 @@ const ManageTrustedVoicesScreen = () => {
             await newSound.playAsync();
         } catch (error) {
             console.error("Audio Playback Error:", error);
-            Alert.alert("Error", "Could not play audio file.");
+            showAlert("Error", "Could not play audio file.", 'error');
         }
     };
 
     const handleDeleteClip = async (name: string, path: string, index: number) => {
-        Alert.alert(
+        showAlert(
             "Delete Clip",
             "Are you sure you want to delete this voice clip?",
+            'warning',
             [
                 { text: "Cancel", style: "cancel" },
                 { 
@@ -94,9 +112,10 @@ const ManageTrustedVoicesScreen = () => {
     };
 
     const handleDelete = (name: string) => {
-        Alert.alert(
+        showAlert(
             "Delete Voice",
             `Are you sure you want to delete voice data for "${name}"?`,
+            'warning',
             [
                 { text: "Cancel", style: "cancel" },
                 { 
@@ -170,6 +189,14 @@ const ManageTrustedVoicesScreen = () => {
 
     return (
         <SafeAreaView style={styles.container}>
+            <CustomAlert 
+                visible={alertConfig.visible}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                type={alertConfig.type}
+                onClose={hideAlert}
+                buttons={alertConfig.buttons}
+            />
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color={COLORS.text} />
