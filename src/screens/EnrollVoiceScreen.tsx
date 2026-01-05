@@ -144,6 +144,7 @@ const EnrollVoiceScreen = () => {
                     <TextInput
                         style={styles.input}
                         placeholder={child ? "Enter name (e.g. Dad)" : "Enter your name"}
+                        placeholderTextColor={COLORS.textSecondary}
                         value={customName}
                         onChangeText={setCustomName}
                     />

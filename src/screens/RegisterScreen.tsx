@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ImageBackground, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
 import { COLORS, SPACING, SIZES } from '../constants/theme';
 import { StatusBar } from 'expo-status-bar';
+import CustomAlert, { AlertType, AlertButton } from '../components/CustomAlert';
 
 type RegisterScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Register'>;
 
@@ -16,20 +17,36 @@ const RegisterScreen = () => {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
 
+    const [alertConfig, setAlertConfig] = useState({
+        visible: false,
+        title: '',
+        message: '',
+        type: 'info' as AlertType,
+        buttons: [{ text: 'OK' }] as AlertButton[]
+    });
+
+    const showAlert = (title: string, message: string, type: AlertType = 'info', buttons: AlertButton[] = [{ text: 'OK' }]) => {
+        setAlertConfig({ visible: true, title, message, type, buttons });
+    };
+
+    const hideAlert = () => {
+        setAlertConfig(prev => ({ ...prev, visible: false }));
+    };
+
     const handleRegister = () => {
         // Basic validation
         if (!name || !email || !password || !confirmPassword) {
-            Alert.alert('Error', 'Please fill in all fields');
+            showAlert('Error', 'Please fill in all fields', 'error');
             return;
         }
 
         if (password !== confirmPassword) {
-            Alert.alert('Error', 'Passwords do not match');
+            showAlert('Error', 'Passwords do not match', 'error');
             return;
         }
 
         // Mock registration success
-        Alert.alert('Success', 'Account created successfully!', [
+        showAlert('Success', 'Account created successfully!', 'success', [
             { text: 'OK', onPress: () => navigation.replace('Home') }
         ]);
     };
@@ -37,6 +54,14 @@ const RegisterScreen = () => {
     return (
         <ImageBackground source={require('../assets/home_bg.png')} style={styles.container}>
             <StatusBar style="dark" />
+            <CustomAlert 
+                visible={alertConfig.visible}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                type={alertConfig.type}
+                onClose={hideAlert}
+                buttons={alertConfig.buttons}
+            />
             <View style={styles.overlay}>
                 <ScrollView contentContainerStyle={styles.content}>
                     <View style={styles.header}>
@@ -50,6 +75,7 @@ const RegisterScreen = () => {
                             <TextInput
                                 style={styles.input}
                                 placeholder="Enter your full name"
+                                placeholderTextColor={COLORS.textSecondary}
                                 value={name}
                                 onChangeText={setName}
                                 autoCapitalize="words"
@@ -61,6 +87,7 @@ const RegisterScreen = () => {
                             <TextInput
                                 style={styles.input}
                                 placeholder="Enter your email"
+                                placeholderTextColor={COLORS.textSecondary}
                                 value={email}
                                 onChangeText={setEmail}
                                 autoCapitalize="none"
@@ -73,6 +100,7 @@ const RegisterScreen = () => {
                             <TextInput
                                 style={styles.input}
                                 placeholder="Create a password"
+                                placeholderTextColor={COLORS.textSecondary}
                                 value={password}
                                 onChangeText={setPassword}
                                 secureTextEntry
@@ -84,6 +112,7 @@ const RegisterScreen = () => {
                             <TextInput
                                 style={styles.input}
                                 placeholder="Confirm your password"
+                                placeholderTextColor={COLORS.textSecondary}
                                 value={confirmPassword}
                                 onChangeText={setConfirmPassword}
                                 secureTextEntry

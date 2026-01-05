@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ImageBackground } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
 import { COLORS, SPACING, SIZES } from '../constants/theme';
 import { StatusBar } from 'expo-status-bar';
+import CustomAlert, { AlertType, AlertButton } from '../components/CustomAlert';
 
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
 
@@ -13,17 +14,41 @@ const LoginScreen = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
+    const [alertConfig, setAlertConfig] = useState({
+        visible: false,
+        title: '',
+        message: '',
+        type: 'info' as AlertType,
+        buttons: [{ text: 'OK' }] as AlertButton[]
+    });
+
+    const showAlert = (title: string, message: string, type: AlertType = 'info', buttons: AlertButton[] = [{ text: 'OK' }]) => {
+        setAlertConfig({ visible: true, title, message, type, buttons });
+    };
+
+    const hideAlert = () => {
+        setAlertConfig(prev => ({ ...prev, visible: false }));
+    };
+
     const handleLogin = () => {
         // Hardcoded validation
         if ((email === 'user@test.com' && password === 'password') || (email === 'admin' && password === 'admin')) {
             navigation.replace('Home');
         } else {
-            Alert.alert('Login Failed', 'Invalid email or password.\nTry: user@test.com / password');
+            showAlert('Login Failed', 'Invalid email or password.\nTry: user@test.com / password', 'error');
         }
     };
 
     return (
         <ImageBackground source={require('../assets/login_bg.png')} style={styles.container}>
+            <CustomAlert 
+                visible={alertConfig.visible}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                type={alertConfig.type}
+                onClose={hideAlert}
+                buttons={alertConfig.buttons}
+            />
             <StatusBar style="dark" />
             <View style={styles.content}>
                 <View style={styles.header}>
@@ -37,6 +62,7 @@ const LoginScreen = () => {
                         <TextInput
                             style={styles.input}
                             placeholder="Enter your email"
+                            placeholderTextColor={COLORS.textSecondary}
                             value={email}
                             onChangeText={setEmail}
                             autoCapitalize="none"
@@ -49,6 +75,7 @@ const LoginScreen = () => {
                         <TextInput
                             style={styles.input}
                             placeholder="Enter your password"
+                            placeholderTextColor={COLORS.textSecondary}
                             value={password}
                             onChangeText={setPassword}
                             secureTextEntry

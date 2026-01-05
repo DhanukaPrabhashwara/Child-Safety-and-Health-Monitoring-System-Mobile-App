@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ScrollView, Image, Dimensions, Animated, Easing } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LineChart } from 'react-native-chart-kit';
 import { COLORS, SIZES, SPACING } from '../constants/theme';
 import { RootStackParamList } from '../navigation/types';
+import TrustModelService from '../services/TrustModelService';
 
 type AudioDetailRouteProp = RouteProp<RootStackParamList, 'AudioDetail'>;
 type AudioDetailNavigationProp = StackNavigationProp<RootStackParamList, 'AudioDetail'>;
@@ -17,11 +18,30 @@ const AudioDetailScreen = () => {
     const route = useRoute<AudioDetailRouteProp>();
     const { child } = route.params;
 
+    const [enrolledVoices, setEnrolledVoices] = useState<{ id: string; name: string; initials: string; relation: string }[]>([]);
+
     const isDistress = child.audioStatus === 'distress';
     const isRiskHigh = child.riskScore > 80;
 
     // Animation for Live Badge
     const pulseAnim = useRef(new Animated.Value(1)).current;
+
+    useFocusEffect(
+        React.useCallback(() => {
+            loadVoices();
+        }, [])
+    );
+
+    const loadVoices = async () => {
+        const voices = await TrustModelService.getEnrolledVoices();
+        const formatted = voices.map(v => ({
+            id: v.name,
+            name: v.name,
+            initials: v.name.charAt(0).toUpperCase(),
+            relation: 'Trusted' // Default relation
+        }));
+        setEnrolledVoices(formatted);
+    };
 
     useEffect(() => {
         if (isDistress) {
