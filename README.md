@@ -1,6 +1,6 @@
 <div align="center">
 
-![SafePlay Banner](C:/Users/dell/.gemini/antigravity/brain/59ac1f09-72a9-4b7b-88d5-4b3571ee7cdb/safeplay_hero_banner_1768147533588.png)
+![SafePlay Banner](./assets/safeplay_hero_banner.png)
 
 # 🛡️ SafePlay: Smartwatch-Based Child Safety & Health Monitoring System
 
@@ -71,7 +71,7 @@ SafePlay introduces groundbreaking features that set it apart from conventional 
 
 <div align="center">
 
-![Feature Icons](C:/Users/dell/.gemini/antigravity/brain/59ac1f09-72a9-4b7b-88d5-4b3571ee7cdb/feature_icons_grid_1768147570135.png)
+![Feature Icons](./assets/feature_icons_grid.png)
 
 </div>
 
@@ -157,7 +157,7 @@ graph TB
     end
 
     subgraph Smartwatch ["⌚ SafePlay Watch App (Kotlin/WearOS)"]
-        Sensors[Sensor Manager<br/>HR | GPS | Mic | Accel | Temp]
+        Sensors["Sensor Manager<br/>HR, GPS, Mic, Accel, Temp"]
         
         subgraph Edge_AI ["🧠 TinyML Inference Engine"]
             Threat[Stranger Threat Model<br/>Audio Analysis]
