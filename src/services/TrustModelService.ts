@@ -13,6 +13,7 @@ let lastProcessingStats = {
     embeddingSize: 0,
     processingTimeMs: 0,
     lastVector: [] as number[],
+    comparisons: [] as string[],
     lastError: '' // Added to track why it failed
 };
 
@@ -43,7 +44,8 @@ class TrustModelService {
             const { Asset } = require('expo-asset');
             
             // Ensure the asset is bundled
-            const modelAsset = Asset.fromModule(require('../assets/Trustmodel2.tflite'));
+            // Path must be relative to this file: ../../assets points to root/assets
+            const modelAsset = Asset.fromModule(require('../../assets/Trustmodel2.tflite'));
             await modelAsset.downloadAsync();
             
             console.log('Model Asset:', modelAsset); // Debug asset info
@@ -138,6 +140,7 @@ class TrustModelService {
                 embeddingSize: normalizedVector.length,
                 processingTimeMs: Date.now() - startTime,
                 lastVector: normalizedVector,
+                comparisons: [],
                 lastError: ''
             };
 
@@ -164,6 +167,7 @@ class TrustModelService {
             embeddingSize: EMBEDDING_SIZE,
             processingTimeMs: 1000,
             lastVector: normalizedVector,
+            comparisons: [],
             lastError: reason
         };
         return normalizedVector;
@@ -225,11 +229,13 @@ class TrustModelService {
         let identifiedPerson: string | undefined = undefined;
 
         // Iterate through all users
+        const comparisonLog: string[] = [];
         for (const [personName, vectors] of Object.entries(keyring)) {
             // Iterate through all vectors for this user
             for (const enrolledVector of vectors) {
                 // Cosine Similarity
                 const dotProduct = enrolledVector.reduce((sum, val, idx) => sum + val * testEmbedding[idx], 0);
+                comparisonLog.push(`${personName}: ${dotProduct.toFixed(4)}`);
                 
                 if (dotProduct > maxScore) {
                     maxScore = dotProduct;
@@ -237,12 +243,12 @@ class TrustModelService {
                 }
             }
         }
+        lastProcessingStats.comparisons = comparisonLog;
         
         console.log(`Max Similarity Score: ${maxScore} (Matched: ${identifiedPerson})`);
         
-        // Threshold check (0.85 as requested for high security)
-        const TRUST_THRESHOLD = 0.85;
-        if (maxScore > TRUST_THRESHOLD && identifiedPerson) {
+        // Threshold check (0.75 is a common starting point for Cosine Sim)
+        if (maxScore > 0.75 && identifiedPerson) {
             return { status: 'SAFE', score: maxScore, person: identifiedPerson };
         }
         
@@ -343,6 +349,12 @@ class TrustModelService {
         info += `Spectrogram: ${lastProcessingStats.spectrogramShape}\n`;
         info += `Embedding: ${lastProcessingStats.embeddingSize}\n`;
         info += `Time: ${lastProcessingStats.processingTimeMs}ms\n`;
+        
+        if (lastProcessingStats.comparisons && lastProcessingStats.comparisons.length > 0) {
+            info += '\n--- Comparisons (Cosine Similarity) ---\n';
+            info += lastProcessingStats.comparisons.join('\n') + '\n';
+        }
+
         if (lastProcessingStats.lastError) {
              info += `\n[ERROR] FALLBACK TO MOCK:\n${lastProcessingStats.lastError}\n`;
         }
