@@ -23,7 +23,10 @@ const ManageTrustedVoicesScreen = () => {
     const loadVoices = async () => {
         setLoading(true);
         try {
-            const list = await TrustModelService.getEnrolledVoices();
+            // In a real app, this childId would come from route params or context.
+            // Using a dummy childId for demonstration purposes to show the sync bridge.
+            const demoChildId = 'child_001'; 
+            const list = await TrustModelService.getEnrolledVoices(demoChildId);
             setVoices(list);
         } catch (error) {
             console.error(error);
@@ -111,23 +114,27 @@ const ManageTrustedVoicesScreen = () => {
         );
     };
 
-    const renderItem = ({ item }: { item: EnrolledVoice }) => (
-        <View style={styles.card}>
+    const renderItem = ({ item }: { item: EnrolledVoice }) => {
+        const isCloud = item.name === 'Watch (Cloud)';
+        return (
+        <View style={[styles.card, isCloud && { borderColor: COLORS.primary, borderWidth: 1 }]}>
             <View style={styles.cardHeader}>
-                <View style={styles.iconContainer}>
-                    <Ionicons name="mic" size={24} color={COLORS.primary} />
+                <View style={[styles.iconContainer, isCloud && { backgroundColor: COLORS.primary }]}>
+                    <Ionicons name={isCloud ? "cloud" : "mic"} size={24} color={isCloud ? COLORS.white : COLORS.primary} />
                 </View>
                 <View style={styles.infoContainer}>
                     <Text style={styles.name}>{item.name}</Text>
-                    <Text style={styles.details}>{item.sampleCount} samples recorded</Text>
+                    <Text style={styles.details}>{item.sampleCount} {isCloud ? 'vectors synced' : 'samples recorded'}</Text>
                 </View>
-                <TouchableOpacity onPress={() => handleDelete(item.name)} style={styles.deleteButton}>
-                    <Ionicons name="trash-outline" size={20} color={COLORS.danger} />
-                </TouchableOpacity>
+                {!isCloud && (
+                    <TouchableOpacity onPress={() => handleDelete(item.name)} style={styles.deleteButton}>
+                        <Ionicons name="trash-outline" size={20} color={COLORS.danger} />
+                    </TouchableOpacity>
+                )}
             </View>
 
-            {/* Audio Clips List */}
-            {item.audioPaths && item.audioPaths.length > 0 && (
+            {/* Audio Clips List (Local only for playback) */}
+            {!isCloud && item.audioPaths && item.audioPaths.length > 0 && (
                 <View style={styles.clipsContainer}>
                     <Text style={styles.clipsTitle}>Saved Clips:</Text>
                     {item.audioPaths.map((path, index) => (
@@ -161,6 +168,7 @@ const ManageTrustedVoicesScreen = () => {
             )}
         </View>
     );
+    };
 
     const handleAddVoice = () => {
         // Navigate to EnrollVoice without a child param, so it acts as "Generic" enrollment

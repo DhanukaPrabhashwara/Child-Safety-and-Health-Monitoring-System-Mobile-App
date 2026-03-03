@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, SafeAreaView, StatusBar, ImageBackground, Alert } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, SafeAreaView, StatusBar, ImageBackground, Alert, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,7 +13,7 @@ type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
 
 const HomeScreen = () => {
     const navigation = useNavigation<HomeScreenNavigationProp>();
-    const { children } = useChildContext();
+    const { children, loading } = useChildContext();
 
     const handleAddChild = () => {
         navigation.navigate('AddChild');
@@ -59,33 +59,41 @@ const HomeScreen = () => {
                     </TouchableOpacity>
                 </View>
 
-                {alerts.length > 0 && (
-                    <View style={styles.alertContainer}>
-                        <View style={styles.alertHeader}>
-                            <Ionicons name="notifications" size={20} color={COLORS.white} />
-                            <Text style={styles.alertHeaderText}>Attention Needed ({alerts.length})</Text>
-                        </View>
-                        {alerts.map((alert, index) => (
-                            <Text key={index} style={styles.alertText}>• {alert}</Text>
-                        ))}
+                {loading ? (
+                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                         <ActivityIndicator size="large" color={COLORS.primary} />
                     </View>
-                )}
+                ) : (
+                    <>
+                        {alerts.length > 0 && (
+                            <View style={styles.alertContainer}>
+                                <View style={styles.alertHeader}>
+                                    <Ionicons name="notifications" size={20} color={COLORS.white} />
+                                    <Text style={styles.alertHeaderText}>Attention Needed ({alerts.length})</Text>
+                                </View>
+                                {alerts.map((alert, index) => (
+                                    <Text key={index} style={styles.alertText}>• {alert}</Text>
+                                ))}
+                            </View>
+                        )}
 
-                <FlatList
-                    data={children}
-                    keyExtractor={(item) => item.id}
-                    renderItem={({ item }) => (
-                        <ChildCard child={item} onPress={() => handleChildPress(item)} />
-                    )}
-                    contentContainerStyle={styles.listContent}
-                    showsVerticalScrollIndicator={false}
-                    ListEmptyComponent={
-                        <View style={styles.emptyContainer}>
-                            <Text style={styles.emptyText}>No children added yet.</Text>
-                            <Text style={styles.emptySubtext}>Tap the + button to add one.</Text>
-                        </View>
-                    }
-                />
+                        <FlatList
+                            data={children}
+                            keyExtractor={(item) => item.id}
+                            renderItem={({ item }) => (
+                                <ChildCard child={item} onPress={() => handleChildPress(item)} />
+                            )}
+                            contentContainerStyle={styles.listContent}
+                            showsVerticalScrollIndicator={false}
+                            ListEmptyComponent={
+                                <View style={styles.emptyContainer}>
+                                    <Text style={styles.emptyText}>No children added yet.</Text>
+                                    <Text style={styles.emptySubtext}>Tap the + button to add one.</Text>
+                                </View>
+                            }
+                        />
+                    </>
+                )}
 
                 <TouchableOpacity style={styles.fab} onPress={handleAddChild} activeOpacity={0.8}>
                     <Ionicons name="add" size={30} color={COLORS.white} />

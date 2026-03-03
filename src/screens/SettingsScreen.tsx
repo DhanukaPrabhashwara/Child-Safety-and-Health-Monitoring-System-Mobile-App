@@ -64,7 +64,7 @@ const SettingsScreen = () => {
             <ScrollView style={styles.content}>
                 <Text style={styles.sectionHeader}>Account</Text>
                 <View style={styles.section}>
-                    <SettingItem icon="person-outline" title="Profile" onPress={() => {}} />
+                    <SettingItem icon="person-outline" title="Profile" onPress={() => navigation.navigate('Profile')} />
                     <SettingItem icon="notifications-outline" title="Notifications" hasSwitch switchValue={notifications} onSwitchChange={setNotifications} />
                     <SettingItem icon="finger-print-outline" title="Biometric Login" hasSwitch switchValue={biometrics} onSwitchChange={setBiometrics} />
                 </View>

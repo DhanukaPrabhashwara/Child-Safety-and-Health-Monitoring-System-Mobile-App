@@ -62,7 +62,7 @@ export interface Child {
   safeZones: string[];
   healthData: HealthData;
   alerts?: Alert[];
-  
+
   // NEW: Audio Threat Detection Data
   audioStatus: 'safe' | 'unknown' | 'distress';
   audioEvents: AudioEvent[];
@@ -115,7 +115,8 @@ export const MOCK_CHILDREN: Child[] = [
     ],
     trustedVoices: [
       { id: 'v1', name: 'Mom', relation: 'Mother', initials: 'MJ' },
-      { id: 'v2', name: 'Dad', relation: 'Father', initials: 'DJ' }
+      { id: 'v2', name: 'Dad', relation: 'Father', initials: 'DJ' },
+      { id: 'cloud', name: 'Watch (Cloud)', relation: 'Device Sync', initials: 'WC' }
     ],
     privacyLogs: [
       { timestamp: '10:00 AM', label: 'Trusted Voice (Mom)', confidence: 98 },

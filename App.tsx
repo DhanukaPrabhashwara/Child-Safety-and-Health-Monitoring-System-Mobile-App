@@ -16,6 +16,9 @@ import SettingsScreen from './src/screens/SettingsScreen';
 import ManageTrustedVoicesScreen from './src/screens/ManageTrustedVoicesScreen';
 import CallWatchScreen from './src/screens/CallWatchScreen';
 import SimulationScreen from './src/screens/SimulationScreen';
+import PairWatchScreen from './src/screens/PairWatchScreen';
+
+import ProfileScreen from './src/screens/ProfileScreen';
 
 import { RootStackParamList } from './src/navigation/types';
 
@@ -48,6 +51,8 @@ export default function App() {
             <Stack.Screen name="ManageTrustedVoices" component={ManageTrustedVoicesScreen} />
             <Stack.Screen name="CallWatch" component={CallWatchScreen} />
             <Stack.Screen name="Simulation" component={SimulationScreen} />
+            <Stack.Screen name="PairWatch" component={PairWatchScreen} />
+            <Stack.Screen name="Profile" component={ProfileScreen} />
           </Stack.Navigator>
         </NavigationContainer>
       </ChildProvider>

@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ImageBackground, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ImageBackground, ScrollView, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
 import { COLORS, SPACING, SIZES } from '../constants/theme';
 import { StatusBar } from 'expo-status-bar';
+import { supabase } from '../services/SupabaseService';
 
 type RegisterScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Register'>;
 
@@ -15,23 +16,37 @@ const RegisterScreen = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [loading, setLoading] = useState(false);
 
-    const handleRegister = () => {
-        // Basic validation
+    const handleRegister = async () => {
         if (!name || !email || !password || !confirmPassword) {
             Alert.alert('Error', 'Please fill in all fields');
             return;
         }
-
         if (password !== confirmPassword) {
             Alert.alert('Error', 'Passwords do not match');
             return;
         }
-
-        // Mock registration success
-        Alert.alert('Success', 'Account created successfully!', [
-            { text: 'OK', onPress: () => navigation.replace('Home') }
-        ]);
+        if (password.length < 6) {
+            Alert.alert('Error', 'Password must be at least 6 characters');
+            return;
+        }
+        setLoading(true);
+        try {
+            const { data, error } = await supabase.auth.signUp({
+                email: email.trim(),
+                password,
+                options: { data: { full_name: name } }
+            });
+            if (error) throw error;
+            Alert.alert('Account Created!', 'You can now log in with your credentials.', [
+                { text: 'Log In', onPress: () => navigation.replace('Login') }
+            ]);
+        } catch (error: any) {
+            Alert.alert('Registration Failed', error.message || 'Could not create account.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -90,8 +105,8 @@ const RegisterScreen = () => {
                             />
                         </View>
 
-                        <TouchableOpacity style={styles.button} onPress={handleRegister}>
-                            <Text style={styles.buttonText}>Sign Up</Text>
+                        <TouchableOpacity style={[styles.button, loading && { opacity: 0.7 }]} onPress={handleRegister} disabled={loading}>
+                            {loading ? <ActivityIndicator color={COLORS.white} /> : <Text style={styles.buttonText}>Sign Up</Text>}
                         </TouchableOpacity>
 
                         <View style={styles.footer}>

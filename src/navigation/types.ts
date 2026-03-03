@@ -12,6 +12,8 @@ export type RootStackParamList = {
     ManageTrustedVoices: undefined;
     CallWatch: { child: Child };
     Simulation: undefined;
+    PairWatch: { child: Child };
+    Profile: undefined;
 };
 
 export type ChildTabParamList = {

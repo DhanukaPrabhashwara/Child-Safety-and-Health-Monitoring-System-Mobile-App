@@ -15,6 +15,7 @@ const ChildCard: React.FC<ChildCardProps> = ({ child, onPress }) => {
     const isLocationUnknown = child.location.status === 'Unknown';
     const isUnknownVoice = child.audioStatus === 'unknown';
     const isDistress = child.audioStatus === 'distress';
+    const hasCloudSync = child.trustedVoices?.some(v => v.name === 'Watch (Cloud)');
 
     const hasAlert = isHydrationLow || isStressHigh || isLocationUnknown || isUnknownVoice || isDistress;
 
@@ -83,6 +84,12 @@ const ChildCard: React.FC<ChildCardProps> = ({ child, onPress }) => {
                         <View style={[styles.badge, { backgroundColor: COLORS.danger }]}>
                             <MaterialCommunityIcons name="waveform" size={12} color={COLORS.white} />
                             <Text style={styles.badgeText}>Distress Detected</Text>
+                        </View>
+                    )}
+                    {hasCloudSync && !isDistress && !isUnknownVoice && (
+                        <View style={[styles.badge, { backgroundColor: COLORS.success }]}>
+                            <Ionicons name="cloud-done" size={12} color={COLORS.white} />
+                            <Text style={styles.badgeText}>Watch Synced</Text>
                         </View>
                     )}
                 </View>

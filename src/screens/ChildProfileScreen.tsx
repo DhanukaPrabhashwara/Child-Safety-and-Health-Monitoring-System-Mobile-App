@@ -161,6 +161,12 @@ const ChildProfileScreen = () => {
                             <Ionicons name="mic" size={20} color={COLORS.white} />
                         </View>
                     </TouchableOpacity>
+                    <TouchableOpacity style={styles.fabActionItem} onPress={() => navigation.navigate('PairWatch' as any, { child })}>
+                        <Text style={styles.fabActionText}>Pair Watch</Text>
+                        <View style={styles.fabActionBtn}>
+                            <Ionicons name="watch" size={20} color={COLORS.white} />
+                        </View>
+                    </TouchableOpacity>
                     <TouchableOpacity style={styles.fabActionItem} onPress={() => Alert.alert('Add Zone', 'Map feature coming soon.')}>
                         <Text style={styles.fabActionText}>Add Safe Zone</Text>
                         <View style={styles.fabActionBtn}>

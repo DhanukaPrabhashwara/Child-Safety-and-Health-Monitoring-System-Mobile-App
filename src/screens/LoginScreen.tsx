@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ImageBackground } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ImageBackground, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
 import { COLORS, SPACING, SIZES } from '../constants/theme';
 import { StatusBar } from 'expo-status-bar';
+import { supabase } from '../services/SupabaseService';
 
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
 
@@ -12,13 +13,24 @@ const LoginScreen = () => {
     const navigation = useNavigation<LoginScreenNavigationProp>();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
 
-    const handleLogin = () => {
-        // Hardcoded validation
-        if ((email === 'user@test.com' && password === 'password') || (email === 'admin' && password === 'admin')) {
-            navigation.replace('Home');
-        } else {
-            Alert.alert('Login Failed', 'Invalid email or password.\nTry: user@test.com / password');
+    const handleLogin = async () => {
+        if (!email || !password) {
+            Alert.alert('Error', 'Please enter your email and password.');
+            return;
+        }
+        setLoading(true);
+        try {
+            const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+            if (error) throw error;
+            if (data.session) {
+                navigation.replace('Home');
+            }
+        } catch (error: any) {
+            Alert.alert('Login Failed', error.message || 'Invalid email or password.');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -55,8 +67,8 @@ const LoginScreen = () => {
                         />
                     </View>
 
-                    <TouchableOpacity style={styles.button} onPress={handleLogin}>
-                        <Text style={styles.buttonText}>Log In</Text>
+                    <TouchableOpacity style={[styles.button, loading && { opacity: 0.7 }]} onPress={handleLogin} disabled={loading}>
+                        {loading ? <ActivityIndicator color={COLORS.white} /> : <Text style={styles.buttonText}>Log In</Text>}
                     </TouchableOpacity>
 
                     <View style={styles.footer}>

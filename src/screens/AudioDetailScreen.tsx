@@ -20,8 +20,40 @@ const AudioDetailScreen = () => {
     const isDistress = child.audioStatus === 'distress';
     const isRiskHigh = child.riskScore > 80;
 
+    const [realLogs, setRealLogs] = useState<any[]>([]);
+    const [loadingLogs, setLoadingLogs] = useState(true);
+
     // Animation for Live Badge
     const pulseAnim = useRef(new Animated.Value(1)).current;
+
+    useEffect(() => {
+        fetchLogs();
+    }, [child.id]);
+
+    const fetchLogs = async () => {
+        setLoadingLogs(true);
+        try {
+            // Import and use SupabaseService
+            const SupabaseService = require('../services/SupabaseService').default;
+            const voices = await SupabaseService.getVoicesForChild(child.id);
+            
+            // Map VoiceLog to the UI format
+            const formattedLogs = voices.map((v: any) => ({
+                id: v.id,
+                timestamp: new Date(v.timestamp).toLocaleTimeString(),
+                label: v.model_name || "Audio Threat",
+                confidence: v.vector_dim ? Math.min(Math.round((v.vector_dim / 100) * 100), 100) : 95
+            }));
+
+            // Fallback to mock data if DB is completely empty for this child so UI isn't blank during demo
+            setRealLogs(formattedLogs.length > 0 ? formattedLogs : child.privacyLogs);
+        } catch (error) {
+            console.error("Error fetching audio logs:", error);
+            setRealLogs(child.privacyLogs); // Fallback to mocks on offline/error
+        } finally {
+            setLoadingLogs(false);
+        }
+    };
 
     useEffect(() => {
         if (isDistress) {
@@ -148,12 +180,14 @@ const AudioDetailScreen = () => {
                 <Text style={styles.privacySub}>No raw audio is recorded. Metadata only.</Text>
                 
                 <View style={styles.logsCard}>
-                    {child.privacyLogs.map((log, index) => (
-                        <View key={index} style={styles.logRow}>
+                    {loadingLogs ? (
+                        <Text style={{ textAlign: 'center', padding: SPACING.m, color: COLORS.textSecondary }}>Fetching data from watch...</Text>
+                    ) : realLogs.map((log, index) => (
+                        <View key={log.id || index} style={styles.logRow}>
                             <Text style={styles.logText}>
                                 <Text style={styles.logTime}>[{log.timestamp}]</Text> Label={log.label}, Conf={log.confidence}%
                             </Text>
-                            {index < child.privacyLogs.length - 1 && <View style={styles.divider} />}
+                            {index < realLogs.length - 1 && <View style={styles.divider} />}
                         </View>
                     ))}
                 </View>
